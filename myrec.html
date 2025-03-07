@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedWay - My Records</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root {
+            /* Core color palette */
+            --primary: #2A7886;
+            --primary-light: #60A3B0;
+            --secondary: #31AD70;
+            --secondary-light: #80CEA4;
+            --accent: #FFCC33;
+            --background: #F2F9FF;
+            --card-bg: #FFFFFF;
+            --text-dark: #2C3E50;
+            --text-light: #FFFFFF;
+            --danger: #E74C3C;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        /* Background gradient that covers the full page */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(170deg, var(--primary-light) 0%, var(--background) 25%);
+            z-index: -1;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 420px;
+            background: transparent;
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Header */
+        .app-header {
+            padding: 24px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .menu-trigger {
+            background: var(--card-bg);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px var(--shadow);
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .menu-trigger:hover {
+            transform: scale(1.05);
+        }
+
+        .menu-trigger .bar {
+            width: 18px;
+            height: 2px;
+            background-color: var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: auto;
+        }
+
+        .back-btn {
+            background: var(--card-bg);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 8px var(--shadow);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            transform: scale(1.05);
+            text-decoration: none;
+        }
+
+        .back-btn i {
+            color: var(--primary);
+            font-size: 16px;
+        }
+
+        /* Main Content */
+        .content {
+            padding: 10px 20px 30px;
+        }
+
+        /* Page Title */
+        .page-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .page-title i {
+            margin-right: 10px;
+            color: var(--secondary);
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .filter-bar::-webkit-scrollbar {
+            height: 3px;
+        }
+
+        .filter-bar::-webkit-scrollbar-thumb {
+            background-color: var(--primary-light);
+            border-radius: 10px;
+        }
+
+        .filter-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--primary-light);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: var(--primary);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: var(--text-light);
+        }
+
+        /* Records List */
+        .records-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .record-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px;
+            box-shadow: 0 4px 12px var(--shadow);
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: flex-start;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .record-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .record-icon {
+            background: rgba(42, 120, 134, 0.1);
+            min-width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 16px;
+        }
+
+        .record-icon i {
+            font-size: 22px;
+            color: var(--primary);
+        }
+
+        .record-content {
+            flex: 1;
+        }
+
+        .record-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 5px;
+            color: var(--text-dark);
+        }
+
+        .record-details {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .record-date {
+            font-size: 12px;
+            color: #888;
+            display: flex;
+            align-items: center;
+        }
+
+        .record-date i {
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .record-download {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            color: var(--primary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.3s ease;
+        }
+
+        .record-download:hover {
+            transform: scale(1.2);
+        }
+
+        /* Upload Button */
+        .upload-btn {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: var(--text-light);
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(42, 120, 134, 0.3);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(42, 120, 134, 0.4);
+        }
+
+        .upload-btn i {
+            font-size: 20px;
+        }
+
+        /* Empty Record State */
+        .empty-state {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 4px 12px var(--shadow);
+            display: none;
+        }
+
+        .empty-state i {
+            font-size: 50px;
+            color: var(--primary-light);
+            margin-bottom: 20px;
+        }
+
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /* Side Menu */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 5px 0 15px var(--shadow);
+            color: var(--text-light);
+        }
+
+        .side-menu.open {
+            transform: translateX(0);
+        }
+
+        .menu-header {
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-logo {
+            width: 100px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+
+        .menu-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .menu-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .menu-close:hover {
+            transform: rotate(90deg);
+        }
+
+        .menu-list {
+            list-style-type: none;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .menu-item {
+            margin-bottom: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: background-color 0.3s ease;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .menu-item.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-light);
+            padding: 12px 15px;
+            font-weight: 500;
+        }
+
+        .menu-link i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .menu-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .logout-btn i {
+            margin-right: 12px;
+        }
+
+        /* Overlay */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .pulse {
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        /* Media Queries for better responsiveness */
+        @media (max-width: 480px) {
+            .app-container {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="overlay" id="overlay"></div>
+    
+    <div class="app-container">
+        <!-- Header -->
+        <div class="app-header">
+            <button class="menu-trigger" id="menuBtn">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </button>
+            <img src="medwaytran.png" alt="MedWay Logo" class="logo">
+            <a href="home.html" class="back-btn" id="backBtn">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Page Title -->
+            <div class="page-title">
+                <i class="fas fa-file-medical"></i>
+                My Medical Records
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="filter-bar">
+                <button class="filter-btn active">All Records</button>
+                <button class="filter-btn">Lab Results</button>
+                <button class="filter-btn">Prescriptions</button>
+                <button class="filter-btn">Imaging</button>
+                <button class="filter-btn">Reports</button>
+            </div>
+
+            <!-- Upload Button -->
+            <button class="upload-btn" id="uploadBtn">
+                <i class="fas fa-upload"></i>
+                Upload New Record
+            </button>
+
+            <!-- Records List -->
+            <div class="records-list">
+                <div class="record-card">
+                    <div class="record-icon">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <div class="record-content">
+                        <div class="record-title">Blood Test Results</div>
+                        <div class="record-details">Complete Blood Count (CBC)</div>
+                        <div class="record-date">
+                            <i class="far fa-calendar-alt"></i>
+                            February 15, 2025
+                        </div>
+                    </div>
+                    <button class="record-download">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+
+                <div class="record-card">
+                    <div class="record-icon">
+                        <i class="fas fa-x-ray"></i>
+                    </div>
+                    <div class="record-content">
+                        <div class="record-title">Chest X-Ray</div>
+                        <div class="record-details">Radiology Department</div>
+                        <div class="record-date">
+                            <i class="far fa-calendar-alt"></i>
+                            January 28, 2025
+                        </div>
+                    </div>
+                    <button class="record-download">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+
+                <div class="record-card">
+                    <div class="record-icon">
+                        <i class="fas fa-pills"></i>
+                    </div>
+                    <div class="record-content">
+                        <div class="record-title">Prescription</div>
+                        <div class="record-details">Amoxicillin 500mg</div>
+                        <div class="record-date">
+                            <i class="far fa-calendar-alt"></i>
+                            January 22, 2025
+                        </div>
+                    </div>
+                    <button class="record-download">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+
+                <div class="record-card">
+                    <div class="record-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <div class="record-content">
+                        <div class="record-title">Annual Check-up</div>
+                        <div class="record-details">General Physical Examination</div>
+                        <div class="record-date">
+                            <i class="far fa-calendar-alt"></i>
+                            December 10, 2024
+                        </div>
+                    </div>
+                    <button class="record-download">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+
+                <div class="record-card">
+                    <div class="record-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="record-content">
+                        <div class="record-title">CT Scan</div>
+                        <div class="record-details">Neurological Assessment</div>
+                        <div class="record-date">
+                            <i class="far fa-calendar-alt"></i>
+                            November 5, 2024
+                        </div>
+                    </div>
+                    <button class="record-download">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Empty State (Hidden by default) -->
+            <div class="empty-state">
+                <i class="fas fa-folder-open"></i>
+                <div class="empty-state-title">No Records Found</div>
+                <div class="empty-state-text">You haven't uploaded any medical records yet.</div>
+                <button class="upload-btn">
+                    <i class="fas fa-upload"></i>
+                    Upload Your First Record
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Side Menu -->
+    <div class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <img src="medwaytran.png" alt="MedWay Logo" class="menu-logo">
+            <button class="menu-close" id="closeMenu">&times;</button>
+        </div>
+        <ul class="menu-list">
+            <li class="menu-item">
+                <a href="home.html" class="menu-link">
+                    <i class="fas fa-home"></i>
+                    Home
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link">
+                    <i class="fas fa-user"></i>
+                    My Profile
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link">
+                    <i class="fas fa-comment-medical"></i>
+                    Meet Doctor
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link">
+                    <i class="fas fa-pills"></i>
+                    Medications
+                </a>
+            </li>
+            <li class="menu-item active">
+                <a href="#" class="menu-link">
+                    <i class="fas fa-file-medical"></i>
+                    My Records
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="Appoint.html" class="menu-link">
+                    <i class="fas fa-calendar-alt"></i>
+                    Appointments
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link">
+                    <i class="fas fa-question-circle"></i>
+                    Help & Support
+                </a>
+            </li>
+        </ul>
+        <div class="menu-footer">
+            <button class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Menu Toggle Functionality
+        const menuBtn = document.getElementById('menuBtn');
+        const sideMenu = document.getElementById('sideMenu');
+        const overlay = document.getElementById('overlay');
+        const closeMenu = document.getElementById('closeMenu');
+        const backBtn = document.getElementById('backBtn');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+
+        function toggleMenu() {
+            sideMenu.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        menuBtn.addEventListener('click', toggleMenu);
+        closeMenu.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+
+        // Upload button functionality
+        uploadBtn.addEventListener('click', function() {
+            this.classList.add('pulse');
+            setTimeout(() => {
+                this.classList.remove('pulse');
+                // In a real app, this would open a file upload dialog
+                alert('Open file upload dialog');
+            }, 500);
+        });
+
+        // Filter buttons
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterBtns.forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                // In a real app, this would filter the records
+                // This is just a visual effect for the demo
+            });
+        });
+
+        // Record card interactions
+        const recordCards = document.querySelectorAll('.record-card');
+        recordCards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Prevent click when clicking download button
+                if (e.target.closest('.record-download')) {
+                    e.stopPropagation();
+                    alert('Download record');
+                    return;
+                }
+                
+                // In a real app, this would open the record details
+                alert('View record details');
+            });
+        });
+
+        // Download buttons
+        const downloadBtns = document.querySelectorAll('.record-download');
+        downloadBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                this.classList.add('pulse');
+                setTimeout(() => {
+                    this.classList.remove('pulse');
+                }, 500);
+            });
+        });
+    </script>
+</body>
+
+</html>
